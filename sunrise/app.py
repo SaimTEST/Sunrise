@@ -22,10 +22,15 @@ def initialize_state() -> None:
 
 
 def inject_styles(no_clicks: int, forgiven: bool) -> None:
-    yes_scale = min(1 + no_clicks * 0.22, 2.65)
-    no_scale = max(1 - no_clicks * 0.13, 0.2)
-    yes_font = min(1.05 + no_clicks * 0.18, 2.15)
-    no_font = max(1.0 - no_clicks * 0.1, 0.35)
+    button_level = min(no_clicks, 8)
+    yes_flex = min(1.45 + button_level * 0.55, 6.0)
+    no_flex = max(1.1 - button_level * 0.11, 0.24)
+    yes_height = min(3.55 + button_level * 0.38, 6.4)
+    no_height = max(3.05 - button_level * 0.18, 1.72)
+    yes_font = min(1.08 + button_level * 0.17, 2.25)
+    no_font = max(0.98 - button_level * 0.075, 0.42)
+    yes_mobile_font = min(1.02 + button_level * 0.115, 1.72)
+    no_mobile_font = max(0.9 - button_level * 0.055, 0.38)
 
     st.markdown(
         f"""
@@ -151,62 +156,157 @@ def inject_styles(no_clicks: int, forgiven: bool) -> None:
             }}
 
             .button-caption {{
-                margin: 1rem 0 0;
+                width: min(100%, 640px);
+                margin: 1rem auto 0;
                 color: rgba(42, 21, 52, 0.62);
                 font-size: 0.92rem;
                 font-weight: 600;
+                text-align: center;
             }}
 
             [data-testid="stHorizontalBlock"] {{
-                width: min(100%, 580px);
-                margin: 0.35rem auto 0;
-                align-items: center;
-                gap: clamp(0.4rem, 2vw, 1rem);
+                width: min(100%, 680px);
+                margin: 0.55rem auto 0;
+                display: flex !important;
+                flex-wrap: nowrap !important;
+                align-items: stretch !important;
+                justify-content: center !important;
+                gap: clamp(0.5rem, 2.8vw, 1.05rem);
             }}
 
-            [data-testid="stHorizontalBlock"] [data-testid="column"]:first-child .stButton button {{
-                min-height: clamp(3.35rem, 9vw, 4.25rem);
-                border: 0;
-                border-radius: 999px;
-                color: #311323;
-                background: linear-gradient(135deg, #fff4a8 0%, #ffd166 48%, #ff8f70 100%);
-                box-shadow: 0 18px 36px rgba(255, 142, 86, 0.34);
-                font-size: {yes_font}rem;
-                font-weight: 800;
-                transform: scale({yes_scale});
-                transform-origin: center;
-                transition: transform 220ms ease, box-shadow 220ms ease, filter 220ms ease;
+            [data-testid="stHorizontalBlock"] [data-testid="column"] {{
+                min-width: 0 !important;
+                transition: flex 260ms ease, width 260ms ease;
             }}
 
-            [data-testid="stHorizontalBlock"] [data-testid="column"]:first-child .stButton button:hover {{
-                filter: brightness(1.03);
-                box-shadow: 0 22px 46px rgba(255, 142, 86, 0.42);
-                transform: scale(calc({yes_scale} + 0.04));
+            [data-testid="stHorizontalBlock"] [data-testid="column"]:first-child {{
+                flex: {yes_flex} 1 0 !important;
+                width: auto !important;
             }}
 
-            [data-testid="stHorizontalBlock"] [data-testid="column"]:last-child .stButton button {{
-                min-height: clamp(2.25rem, 7vw, 3.55rem);
-                border: 1px solid rgba(82, 38, 66, 0.18);
-                border-radius: 999px;
-                color: #512747;
-                background: rgba(255, 255, 255, 0.56);
-                box-shadow: 0 12px 24px rgba(67, 28, 58, 0.12);
-                font-size: {no_font}rem;
-                font-weight: 800;
-                transform: scale({no_scale});
-                transform-origin: center;
-                opacity: {max(0.38, no_scale)};
-                transition: transform 220ms ease, opacity 220ms ease, background 220ms ease;
+            [data-testid="stHorizontalBlock"] [data-testid="column"]:last-child {{
+                flex: {no_flex} 1 0 !important;
+                width: auto !important;
+                max-width: max(3.2rem, 42vw);
             }}
 
-            [data-testid="stHorizontalBlock"] [data-testid="column"]:last-child .stButton button:hover {{
-                background: rgba(255, 255, 255, 0.72);
-                transform: scale(calc({no_scale} + 0.03));
+            [data-testid="stHorizontalBlock"] .stButton {{
+                height: 100%;
             }}
 
             .stButton button {{
                 width: 100%;
                 white-space: nowrap;
+                position: relative;
+                isolation: isolate;
+                overflow: hidden;
+                transform: translateY(0);
+                transition:
+                    transform 220ms ease,
+                    box-shadow 220ms ease,
+                    filter 220ms ease,
+                    min-height 260ms ease,
+                    font-size 260ms ease,
+                    padding 260ms ease;
+                -webkit-tap-highlight-color: transparent;
+            }}
+
+            .stButton button::before {{
+                content: "";
+                position: absolute;
+                inset: 0;
+                z-index: -1;
+                opacity: 0;
+                transition: opacity 240ms ease, transform 420ms ease;
+            }}
+
+            .stButton button:hover {{
+                transform: translateY(-2px);
+            }}
+
+            .stButton button:active {{
+                transform: translateY(1px) scale(0.985);
+            }}
+
+            [data-testid="stHorizontalBlock"] [data-testid="column"]:first-child .stButton button,
+            .st-key-yes_button .stButton button {{
+                min-height: {yes_height}rem;
+                padding: clamp(0.85rem, 2.4vw, 1.1rem) clamp(1rem, 4vw, 2rem);
+                border: 0;
+                border-radius: 999px;
+                color: #351222;
+                background:
+                    radial-gradient(circle at 30% 18%, rgba(255, 255, 255, 0.85), transparent 19%),
+                    linear-gradient(135deg, #fff7b8 0%, #ffd166 36%, #ff986f 72%, #ff6f91 100%);
+                box-shadow:
+                    0 20px 42px rgba(255, 126, 82, 0.34),
+                    0 8px 18px rgba(78, 27, 57, 0.14),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+                    inset 0 -7px 14px rgba(147, 54, 57, 0.12);
+                font-size: clamp(1.05rem, calc(3.1vw + 0.2rem), {yes_font}rem);
+                font-weight: 900;
+                letter-spacing: 0;
+                text-shadow: 0 1px 0 rgba(255, 255, 255, 0.42);
+            }}
+
+            [data-testid="stHorizontalBlock"] [data-testid="column"]:first-child .stButton button::before,
+            .st-key-yes_button .stButton button::before {{
+                background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.62) 42%, transparent 64%);
+                transform: translateX(-120%) skewX(-18deg);
+            }}
+
+            [data-testid="stHorizontalBlock"] [data-testid="column"]:first-child .stButton button:hover,
+            .st-key-yes_button .stButton button:hover {{
+                filter: brightness(1.04) saturate(1.05);
+                box-shadow:
+                    0 26px 54px rgba(255, 126, 82, 0.43),
+                    0 12px 24px rgba(78, 27, 57, 0.16),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.82),
+                    inset 0 -7px 14px rgba(147, 54, 57, 0.1);
+            }}
+
+            [data-testid="stHorizontalBlock"] [data-testid="column"]:first-child .stButton button:hover::before,
+            .st-key-yes_button .stButton button:hover::before {{
+                opacity: 1;
+                transform: translateX(120%) skewX(-18deg);
+            }}
+
+            [data-testid="stHorizontalBlock"] [data-testid="column"]:last-child .stButton button,
+            .st-key-no_button .stButton button {{
+                min-height: {no_height}rem;
+                padding: clamp(0.45rem, 1.6vw, 0.85rem) clamp(0.45rem, 2.4vw, 1rem);
+                border: 1px solid rgba(82, 38, 66, 0.16);
+                border-radius: 999px;
+                color: rgba(70, 31, 58, 0.88);
+                background:
+                    linear-gradient(145deg, rgba(255, 255, 255, 0.78), rgba(255, 244, 236, 0.48));
+                box-shadow:
+                    0 12px 26px rgba(67, 28, 58, 0.13),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+                    inset 0 -5px 12px rgba(88, 38, 68, 0.06);
+                font-size: clamp(0.42rem, calc(2.1vw + 0.12rem), {no_font}rem);
+                font-weight: 800;
+                letter-spacing: 0;
+                opacity: {max(0.44, no_flex)};
+            }}
+
+            [data-testid="stHorizontalBlock"] [data-testid="column"]:last-child .stButton button::before,
+            .st-key-no_button .stButton button::before {{
+                background: linear-gradient(135deg, rgba(255, 209, 102, 0.16), rgba(255, 92, 138, 0.12));
+            }}
+
+            [data-testid="stHorizontalBlock"] [data-testid="column"]:last-child .stButton button:hover,
+            .st-key-no_button .stButton button:hover {{
+                background:
+                    linear-gradient(145deg, rgba(255, 255, 255, 0.86), rgba(255, 244, 236, 0.6));
+                box-shadow:
+                    0 16px 32px rgba(67, 28, 58, 0.16),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+            }}
+
+            [data-testid="stHorizontalBlock"] [data-testid="column"]:last-child .stButton button:hover::before,
+            .st-key-no_button .stButton button:hover::before {{
+                opacity: 1;
             }}
 
             .celebration {{
@@ -301,7 +401,33 @@ def inject_styles(no_clicks: int, forgiven: bool) -> None:
                 }}
 
                 [data-testid="stHorizontalBlock"] {{
-                    gap: 0.35rem;
+                    width: min(100%, 94vw);
+                    gap: clamp(0.35rem, 2.4vw, 0.7rem);
+                    padding-inline: 0.1rem;
+                }}
+
+                [data-testid="stHorizontalBlock"] [data-testid="column"]:first-child {{
+                    flex: {yes_flex} 1 0 !important;
+                }}
+
+                [data-testid="stHorizontalBlock"] [data-testid="column"]:last-child {{
+                    flex: {no_flex} 1 0 !important;
+                    min-width: clamp(2.75rem, 14vw, 5.4rem) !important;
+                    max-width: 36vw;
+                }}
+
+                [data-testid="stHorizontalBlock"] [data-testid="column"]:first-child .stButton button,
+                .st-key-yes_button .stButton button {{
+                    min-height: clamp(3.1rem, {15 + button_level * 1.4}vw, {yes_height}rem);
+                    padding-inline: clamp(0.8rem, 3vw, 1.45rem);
+                    font-size: clamp(1rem, {5.1 + button_level * 0.42}vw, {yes_mobile_font}rem);
+                }}
+
+                [data-testid="stHorizontalBlock"] [data-testid="column"]:last-child .stButton button,
+                .st-key-no_button .stButton button {{
+                    min-height: clamp(1.55rem, {11 - min(button_level, 6) * 0.55}vw, {no_height}rem);
+                    padding-inline: clamp(0.32rem, 1.8vw, 0.75rem);
+                    font-size: clamp(0.38rem, {3.8 - min(button_level, 6) * 0.18}vw, {no_mobile_font}rem);
                 }}
             }}
 
@@ -309,9 +435,9 @@ def inject_styles(no_clicks: int, forgiven: bool) -> None:
                 .main-title {{
                     font-size: clamp(1.82rem, 11vw, 2.45rem);
                 }}
-
-                [data-testid="stHorizontalBlock"] [data-testid="column"]:first-child .stButton button {{
-                    font-size: min({yes_font}rem, 1.55rem);
+                [data-testid="stHorizontalBlock"] {{
+                    width: min(100%, 96vw);
+                    gap: 0.32rem;
                 }}
             }}
         </style>
@@ -359,12 +485,12 @@ def render_buttons() -> None:
     left, right = st.columns([yes_ratio, no_ratio], gap="medium")
 
     with left:
-        if st.button("YES 💛", use_container_width=True):
+        if st.button("YES 💛", key="yes_button", use_container_width=True):
             st.session_state.forgiven = True
             st.balloons()
 
     with right:
-        if st.button("NO 😔", use_container_width=True):
+        if st.button("NO 😔", key="no_button", use_container_width=True):
             st.session_state.no_clicks += 1
             st.session_state.forgiven = False
             st.rerun()
